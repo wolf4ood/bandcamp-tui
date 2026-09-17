@@ -1,0 +1,38 @@
+[workspace]
+members = ["cargo:."]
+
+# Config for 'dist'. After editing, run `dist generate` to refresh
+# .github/workflows/release.yml (never edit that file by hand).
+[dist]
+# The preferred dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.32.0"
+# CI backends to support
+ci = "github"
+# The installers to generate for each app
+installers = ["shell"]
+# Target platforms to build apps for (Rust target-triple syntax).
+# No musl: cpal links ALSA dynamically. No Windows: untested there.
+targets = [
+  "x86_64-unknown-linux-gnu",
+  "aarch64-unknown-linux-gnu",
+  "x86_64-apple-darwin",
+  "aarch64-apple-darwin",
+]
+# Path that installers should place binaries in
+install-path = "CARGO_HOME"
+# Where to host releases
+hosting = "github"
+# Whether to install an updater program
+install-updater = false
+# On pull requests only check that the release plan is valid
+pr-run-mode = "plan"
+
+# rodio -> cpal -> alsa-sys needs the ALSA headers on the Linux builders
+[dist.dependencies.apt]
+libasound2-dev = '*'
+
+# Build each Linux target natively instead of cross-compiling (ALSA + aws-lc-sys
+# make cross builds painful). ubuntu-22.04 gives the oldest glibc GitHub hosts.
+[dist.github-custom-runners]
+x86_64-unknown-linux-gnu = "ubuntu-22.04"
+aarch64-unknown-linux-gnu = "ubuntu-24.04-arm"
